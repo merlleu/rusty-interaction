@@ -117,7 +117,7 @@ fn handler(
     if !defer {
         // Build the function
         let subst_fn = quote! {
-            #vis fn #fname (#ih_n: &mut InteractionHandler, #ctxname: Context) -> ::std::pin::Pin<::std::boxed::Box<dyn Send + ::std::future::Future<Output = #ret> + '_>>{
+            #vis fn #fname (#ih_n: &InteractionHandler, #ctxname: Context) -> ::std::pin::Pin<::std::boxed::Box<dyn Send + ::std::future::Future<Output = #ret> + '_>>{
                 Box::pin(async move {
                     #body
                 })
@@ -132,12 +132,12 @@ fn handler(
         let act_fn = format_ident!("__actual_{}", fname);
 
         let subst_fn = quote! {
-            fn #act_fn (#ih_n: &mut InteractionHandler, #ctxname: Context) -> ::std::pin::Pin<::std::boxed::Box<dyn Send + ::std::future::Future<Output = #ret> + '_>>{
+            fn #act_fn (#ih_n: &InteractionHandler, #ctxname: Context) -> ::std::pin::Pin<::std::boxed::Box<dyn Send + ::std::future::Future<Output = #ret> + '_>>{
                 Box::pin(async move {
                     #body
                 })
             }
-            #vis fn #fname (ihd: &mut InteractionHandler, ctx: Context) -> ::std::pin::Pin<::std::boxed::Box<dyn Send + ::std::future::Future<Output = #ret> + '_>>{
+            #vis fn #fname (ihd: & InteractionHandler, ctx: Context) -> ::std::pin::Pin<::std::boxed::Box<dyn Send + ::std::future::Future<Output = #ret> + '_>>{
                 Box::pin(async move {
                     // TODO: Try to do this without cloning.
                     let mut __ih_c = ihd.clone();
@@ -297,7 +297,7 @@ pub fn slash_command_test(_attr: TokenStream, item: TokenStream) -> TokenStream 
     if !defer {
         // Build the function
         let subst_fn = quote! {
-            #vis fn #fname (#ih_n: &mut InteractionHandler, #ctxname: Context) -> ::std::pin::Pin<::std::boxed::Box<dyn Send + ::std::future::Future<Output = #ret> + '_>>{
+            #vis fn #fname (#ih_n: &InteractionHandler, #ctxname: Context) -> ::std::pin::Pin<::std::boxed::Box<dyn Send + ::std::future::Future<Output = #ret> + '_>>{
                 Box::pin(async move {
                     #body
                 })
@@ -344,7 +344,7 @@ pub fn slash_command_test(_attr: TokenStream, item: TokenStream) -> TokenStream 
         // The difference here being that the non-deffered function doesn't have to spawn a new thread that
         // does the actual work. Here we need it to reply with a deffered channel message.
         let subst_fn = quote! {
-            #vis fn #fname (#ih_n: &mut InteractionHandler, #ctxname: Context) -> ::std::pin::Pin<::std::boxed::Box<dyn Send + ::std::future::Future<Output = #ret> + '_>>{
+            #vis fn #fname (#ih_n: &InteractionHandler, #ctxname: Context) -> ::std::pin::Pin<::std::boxed::Box<dyn Send + ::std::future::Future<Output = #ret> + '_>>{
                 Box::pin(async move {
                     actix::Arbiter::spawn(async move {
                         #(#nvec)*
