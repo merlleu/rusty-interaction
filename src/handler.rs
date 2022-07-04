@@ -36,7 +36,7 @@ type AnyMap = Map<dyn CloneAny + Send + Sync>;
 pub type HandlerResponse = Result<InteractionResponse, std::convert::Infallible>;
 
 type HandlerFunction = fn(
-    &mut InteractionHandler,
+    & InteractionHandler,
     Context,
 ) -> Pin<Box<dyn Future<Output = HandlerResponse> + Send + '_>>;
 
@@ -417,7 +417,7 @@ impl InteractionHandler {
     }
 
     /// Entry point function for handling `Interactions`
-    pub async fn interaction(&mut self, req: HttpRequest, body: String) -> Result<HttpResponse> {
+    pub async fn interaction(&self, req: HttpRequest, body: String) -> Result<HttpResponse> {
         // Check for good content type --> must be application/json
 
         if let Some(ct) = req.headers().get("Content-Type") {
@@ -554,13 +554,13 @@ impl InteractionHandler {
     /// This is a predefined function that starts an `actix_web::HttpServer` and binds `self.interaction` to `/api/discord/interactions`.
     /// Note that you'll eventually have to switch to an HTTPS server. This function does not provide this.
     pub async fn run(self, port: u16) -> std::io::Result<()> {
-        let data = web::Data::new(Mutex::new(self));
+        let data = web::Data::new(self);
         HttpServer::new(move || {
             App::new().app_data(data.clone()).route(
                 "/api/discord/interactions",
                 web::post().to(
-                    |data: web::Data<Mutex<InteractionHandler>>, req: HttpRequest, body: String| async move {
-                        data.lock().unwrap().interaction(req, body).await
+                    |data: web::Data<InteractionHandler>, req: HttpRequest, body: String| async move {
+                        data.interaction(req, body).await
                     },
                 ),
             )
