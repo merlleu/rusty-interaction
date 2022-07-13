@@ -39,6 +39,9 @@ pub struct Context {
 
     /// The [`Interaction`] sent by Discord.
     pub interaction: Interaction,
+    
+    pub command_id: Option<String>,
+    pub command_data: Option<String>
 }
 
 #[serde_as]
@@ -617,6 +620,8 @@ impl Context {
             client: c,
             interaction: i,
             author_id: user_id,
+            command_data: None,
+            command_id: None
         }
     }
 

@@ -488,18 +488,7 @@ impl InteractionHandler {
                             return ERROR_RESPONSE!(500, "Failed to unwrap");
                         };
 
-                        // Check for matches in guild handler map. Unwrapping because this should always contain an ID
-                        if let Some(handler) = self.guild_handles.get(data.id.as_ref().unwrap()) {
-                            // construct a Context
-                            let ctx = Context::new(self.client.clone(), interaction);
-
-                            // Call the handler
-                            let response = handler(self, ctx).await;
-
-                            match_handler_response!(response)
-                        }
-                        // Welp, nothing found. Check for matches in the global map
-                        else if let Some(handler) = self.global_handles.get(
+                        if let Some(handler) = self.global_handles.get(
                             data.name.as_ref().unwrap().as_str(), /* Don't question it */
                         ) {
                             // construct a Context
@@ -527,13 +516,22 @@ impl InteractionHandler {
                             return ERROR_RESPONSE!(500, "Failed to unwrap");
                         };
 
+                        let mut cid =  data.custom_id.as_ref().unwrap().to_string();
+                        let mut cid_data = None;
+                        if cid.contains("~") {
+                            let parts: Vec<&str> = cid.split("~").collect();
+                            cid_data = Some(parts[1].to_string());
+                            cid = parts[0].to_string();
+                        }
+                        
                         if let Some(handler) = self
                             .component_handles
-                            .get(data.custom_id.as_ref().unwrap().as_str())
+                            .get(cid.as_str())
                         {
                             // construct a Context
-                            let ctx = Context::new(self.client.clone(), interaction);
-
+                            let mut ctx = Context::new(self.client.clone(), interaction);
+                            ctx.command_id = Some(cid);
+                            ctx.command_data = cid_data;
                             // Call the handler
                             let response = handler(self, ctx).await;
 
