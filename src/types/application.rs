@@ -265,7 +265,7 @@ pub struct ApplicationCommandInteractionData {
     pub custom_id: Option<String>,
 
     /// For Select Menus, the selected values
-    pub values: Option<Vec<ApplicationCommandOption>>,
+    pub values: Option<Vec<String>>,
 
     #[serde_as(as = "Option<DisplayFromStr>")]
     #[serde(default)]
